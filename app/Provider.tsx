@@ -1,19 +1,20 @@
 'use client'
+import { UserDetailContext } from '@/context/UserDetailContext';
 import { api } from '@/convex/_generated/api';
+import { UserDetails } from '@/types/UserDetails';
 import { useUser } from '@clerk/nextjs';
 import { useMutation } from 'convex/react';
-import React, { useEffect } from 'react'
+import React, { createContext, useEffect } from 'react'
 import { ReactNode } from "react";
 
+
 function Provider({children}: {children: ReactNode}) {
+
+  const [userDetails, setUserDetails] = React.useState<UserDetails | null>(null);
 
   const CreateUser = useMutation(api.users.CreateNewUser);
 
   const { user } = useUser();
-
-  useEffect(() => {
-    user && CreateNewUser();
-  }, [user])
 
   const CreateNewUser = async () => {
     if(user){
@@ -22,16 +23,26 @@ function Provider({children}: {children: ReactNode}) {
           imageUrl: user?.imageUrl || '',
           name: user?.fullName || ''
         })
-
-        console.log(result);
+        setUserDetails(result);
     }
   }
 
+  useEffect(() => {
+    user && CreateNewUser();
+  }, [user])
+
+
   return (
-    <div>
-      {children}
-    </div>
+      <UserDetailContext.Provider value={{ userDetails, setUserDetails }}>
+        <div>
+          {children}
+        </div>
+      </UserDetailContext.Provider>
   )
 }
 
-export default Provider
+export default Provider;
+
+export const useUserDetailsConext = () => {
+  return createContext(UserDetailContext)
+}
