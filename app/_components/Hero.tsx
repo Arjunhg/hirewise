@@ -1,6 +1,7 @@
 'use client'
 import { Button } from "@/components/ui/button";
 import { motion } from "motion/react";
+import Link from "next/link";
 
 function Hero() {
     return (
@@ -69,9 +70,11 @@ function Hero() {
                     }}
                     className="relative z-10 mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
                 >
-                    <Button size={'lg'}>
-                        Explore Now
-                    </Button>
+                    <Link href={'/dashboard'}>
+                        <Button size={'lg'} className="hover:cursor-pointer">
+                            Explore Now
+                        </Button>
+                    </Link>
                     <button className="w-full max-w-60 transform rounded-lg border border-gray-300 bg-white px-6 py-3 font-medium text-black transition-all duration-300 hover:-translate-y-0.5 hover:bg-gray-100 dark:border-gray-700 dark:bg-black dark:text-white dark:hover:bg-gray-900">
                         Contact Support
                     </button>

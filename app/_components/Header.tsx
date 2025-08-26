@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import Link from "next/link";
 
 function Header() {
      return (
@@ -9,9 +10,11 @@ function Header() {
                 <h1 className="text-base font-bold md:text-2xl">HireWise</h1>
             </div>
             {/* Toggle Theme */}
-            <Button>
-                Login
-            </Button>
+           <Link href={'/dashboard'}>
+                <Button className="hover:cursor-pointer" size={'lg'}>
+                    Login
+                </Button>
+           </Link>
         </nav>
     );
 }
