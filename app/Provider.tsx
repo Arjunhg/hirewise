@@ -1,7 +1,7 @@
 'use client'
 import { UserDetailContext } from '@/context/UserDetailContext';
 import { api } from '@/convex/_generated/api';
-import { UserDetails } from '@/types/UserDetails';
+import { UserDetails } from '@/types/Types';
 import { useUser } from '@clerk/nextjs';
 import { useMutation } from 'convex/react';
 import React, { createContext, useEffect } from 'react'

@@ -9,7 +9,10 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^6.31.4",
+    "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-slot": "^1.2.3",
+    "@radix-ui/react-tabs": "^1.1.13",
+    "@tabler/icons-react": "^3.34.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "convex": "^1.26.1",
@@ -19,6 +22,7 @@
     "next-themes": "^0.4.6",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "react-dropzone": "^14.3.8",
     "tailwind-merge": "^3.3.1"
   },
   "devDependencies": {

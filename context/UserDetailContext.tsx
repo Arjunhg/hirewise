@@ -1,5 +1,5 @@
 
-import { UserDetails } from "@/types/UserDetails";
+import { UserDetails } from "@/types/Types";
 import { createContext } from "react";
 
 type UserDetailContextType = {

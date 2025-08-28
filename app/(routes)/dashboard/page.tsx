@@ -4,6 +4,7 @@ import { useUser } from '@clerk/nextjs'
 import React, { useState } from 'react'
 import EmptyState from './EmptyState';
 import { Plus } from 'lucide-react';
+import CreateInterviewDialog from '../_components/CreateInterviewDialog';
 
 function Dashboard() {
 
@@ -27,13 +28,7 @@ function Dashboard() {
             </h1>
           </div>
 
-          <Button 
-            size="lg"
-            className="flex items-center gap-2 cursor-pointer shadow-md hover:shadow-lg transition-all duration-200 w-full sm:w-auto"
-          >
-            <Plus size={20} />
-            Create New Interview
-          </Button>
+          <CreateInterviewDialog/>
         </div>
 
         {/* Content Section */}

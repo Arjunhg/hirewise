@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button'
 import Image from 'next/image'
 import React from 'react'
 import { Plus, FileText, Users, Award } from 'lucide-react'
+import CreateInterviewDialog from '../_components/CreateInterviewDialog'
 
 function EmptyState() {
   return (
@@ -31,14 +32,7 @@ function EmptyState() {
           </p>
         </div>
 
-        {/* Primary Action */}
-        <Button 
-          size="lg" 
-          className="flex items-center gap-2 shadow-md hover:shadow-lg transition-all duration-200 mb-8 cursor-pointer"
-        >
-          <Plus size={20} />
-          Create Your First Interview
-        </Button>
+        <CreateInterviewDialog/>
 
         {/* Feature Highlights */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-2xl">
