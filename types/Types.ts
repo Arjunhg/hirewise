@@ -1,7 +1,7 @@
 import { Id } from "@/convex/_generated/dataModel";
 
 export type UserDetails = {
-  _id: Id<'UserTable'>;
+  _id?: Id<'UserTable'>;
   email: string;
   imageUrl: string;
   name: string;
