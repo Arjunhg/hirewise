@@ -13,8 +13,10 @@ export default defineSchema({
             question: v.string(),
             answer: v.string()
         })),
-        resumeUrl: v.string(),
+        resumeUrl: v.optional(v.string()),
         userId: v.id('UserTable'),
-        status: v.string()
+        status: v.string(),
+        jobTitle: v.optional(v.string()),
+        jobDescription: v.optional(v.string())
     })
 })

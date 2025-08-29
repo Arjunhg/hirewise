@@ -51,25 +51,29 @@ const CreateInterviewDialog = () => {
     }, [file]);
 
     const onSubmit = async () => {
-        if(!file) return;
+        // if(!file) return;
 
         if(!userContext?.userDetails?._id){
             setLoading(false);
             redirect('/sign-in');
         }
         setLoading(true);
-        const formData = new FormData();
-        formData.append('file', file);
+        const formData_ = new FormData();
+        formData_.append('file', file??'');
+        formData_.append('jobTitle', formData?.jobTitle || "");
+        formData_.append('jobDescription', formData?.jobDescription || "");
 
         try {
-            const result = await axios.post('/api/generate-interview-question', formData);
+            const result = await axios.post('/api/generate-interview-question', formData_);
             // console.log(result.data);
             const response = await saveInterviewQuestion({
                 interviewQuestions: result.data?.interviewQuestions,
-                resumeUrl: result.data?.resumeUrl,
+                resumeUrl: result.data?.resumeUrl || undefined,
+                jobTitle: formData?.jobTitle || undefined,
+                jobDescription: formData?.jobDescription || undefined,
                 uid: userContext?.userDetails?._id
             })
-            console.log("Saved interview session: ", response); // this id will be used for redirecting user to the interview session
+            // console.log("Saved interview session: ", response); // this id will be used for redirecting user to the interview session
         } catch (error) {
             console.log(error);
         } finally {
@@ -130,7 +134,7 @@ const CreateInterviewDialog = () => {
                             Cancel
                         </Button>
                     </DialogClose>
-                    <Button className="w-full sm:w-auto cursor-pointer" onClick={onSubmit} disabled={loading || !file}>
+                    <Button className="w-full sm:w-auto cursor-pointer" onClick={onSubmit} disabled={loading || (!file && (!formData?.jobTitle || !formData?.jobDescription))}>
                         {loading && <Loader2Icon className='animate-spin'/>} 
                         Submit
                     </Button>
