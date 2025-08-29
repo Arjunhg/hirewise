@@ -1,18 +1,12 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import { FileUpload } from "@/components/ui/file-upload";
-import { onInputChangeType } from "@/types/Types";
 
-const ResumeUpload = ({ onInputChange }: { onInputChange: onInputChangeType }) => {
+const ResumeUpload = ({ setFile }: { setFile: React.Dispatch<React.SetStateAction<File | undefined>> }) => {
 
-    const [files, setFiles] = useState<File[]>([]);
+    // const [files, setFiles] = useState<File[]>([]);
     const handleFileUpload = (files: File[]) => {
-        setFiles(files);
-        console.log(files);
-        // Update form data with the first file
-        if (files.length > 0) {
-            onInputChange('resume', files[0]);
-        }
+        setFile(files[0]);
     };
 
   return (
