@@ -1,7 +1,7 @@
 import axios from "axios";
 import ImageKit from "imagekit";
 import { NextRequest, NextResponse } from "next/server";
-
+import { getAuth } from "@clerk/nextjs/server";
 
 var imagekit = new ImageKit({
     publicKey : process.env.IMAGEKIT_URL_PUBLIC_KEY || "",
@@ -9,9 +9,11 @@ var imagekit = new ImageKit({
     urlEndpoint : process.env.IMAGEKIT_URL_ENDPOINT || ""
 });
 
+export async function GET() {
+    return NextResponse.json({ message: "API route is working!" }, { status: 200 });
+}
+
 export async function POST(request: NextRequest){
-
-
 
     const formData = await request.formData();
     const file = formData.get('file');
@@ -24,6 +26,12 @@ export async function POST(request: NextRequest){
     const buffer = Buffer.from(bytes);
 
     try {
+
+        const { userId } = getAuth(request);
+        console.log("UserId is: ", userId);
+        if(!userId){
+            return NextResponse.json({error: 'Unauthorized'}, {status: 401});
+        }
         const uploadResponse = await imagekit.upload({
             file: buffer,
             fileName: `upload-${Date.now()}.pdf`,
@@ -31,10 +39,10 @@ export async function POST(request: NextRequest){
         })
 
         // call n8n webhook
-        const result = await axios.post('https://codersnake.app.n8n.cloud/webhook/generate-interview-question', {
+        const result = await axios.post(process.env.N8N_URL_ENDPOINT || '', {
             resumeUrl: uploadResponse.url
         })
-        // console.log("n8n result: ",result.data): message.content.interviewQuestions[] -> Now that we have result from n8n, save it in convex by creating new table
+        // console.log("n8n result: ",result.data?.message?.content?.interview_questions) //message.content.interviewQuestions[] -> Now that we have result from n8n, save it in convex by creating new table
         // return NextResponse.json({url: uploadResponse.url}, {status: 200});
         
         return NextResponse.json({
