@@ -1,7 +1,9 @@
 import axios from "axios";
 import ImageKit from "imagekit";
 import { NextRequest, NextResponse } from "next/server";
-import { getAuth } from "@clerk/nextjs/server";
+import { currentUser } from "@clerk/nextjs/server";
+import { aj } from "@/utils/arcjet";
+import type { ArcjetRateLimitReason } from "@arcjet/next";
 
 var imagekit = new ImageKit({
     publicKey : process.env.IMAGEKIT_URL_PUBLIC_KEY || "",
@@ -15,7 +17,19 @@ export async function POST(request: NextRequest){
     const file = formData.get('file') as File;
     const jobTitle = formData.get('jobTitle');
     const jobDescription = formData.get('jobDescription');
-    
+
+    // const { userId } = getAuth(request);
+    const user = await currentUser();
+
+    const decision = await aj.protect(request, { userId: user?.primaryEmailAddress?.emailAddress??'', requested: 5 }) //Deduct 5 credits
+    console.log("Decision:", decision)
+
+    if((decision.reason as ArcjetRateLimitReason).remaining === 0){
+        return NextResponse.json({
+            status: 429,
+            result: 'No free credits remaining. Try again after 50 second'
+        })
+    }
 
     try {
 
@@ -23,8 +37,7 @@ export async function POST(request: NextRequest){
             const bytes = await file.arrayBuffer();
             const buffer = Buffer.from(bytes);
 
-            const { userId } = getAuth(request);
-            if(!userId){
+            if(!user){
                 return NextResponse.json({error: 'Unauthorized'}, {status: 401});
             }
             const uploadResponse = await imagekit.upload({
