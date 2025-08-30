@@ -17,3 +17,42 @@ export type onInputChangeType = <K extends keyof FormDataType>(
   field: K,
   value: FormDataType[K]
 ) => void;
+
+// app\(routes)\interview\[interviewId]\start\page.tsx
+export type InterviewData = ResumeBasedInterview | ManualInterview;
+
+interface BaseInterview {
+  _id: Id<"InterviewSessionTable">;
+  _creationTime: number;
+  interviewQuestions: { question: string; answer: string }[];
+  userId: Id<"UserTable">;
+  status: string;
+}
+
+interface ResumeBasedInterview extends BaseInterview {
+  type: "resume";
+  resumeUrl: string; // required
+  jobTitle?: string;
+  jobDescription?: string;
+}
+
+interface ManualInterview extends BaseInterview {
+  type: "manual";
+  jobTitle?: string;
+  jobDescription?: string;
+}
+
+// 
+export type KnowledgeBaseItem = {
+  create_time: number;
+  docs: []; 
+  from: number;
+  name: string;
+  prologue: string;
+}
+
+// 
+export type MessageType = {
+  from: 'user' | 'bot',
+  text: string
+}

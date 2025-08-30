@@ -19,7 +19,8 @@ import axios from 'axios'
 import { useMutation } from 'convex/react'
 import { api } from '@/convex/_generated/api'
 import { UserDetailContext } from '@/context/UserDetailContext'
-import { redirect } from 'next/navigation'
+import { redirect, useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 
 const CreateInterviewDialog = () => {
 
@@ -28,12 +29,13 @@ const CreateInterviewDialog = () => {
         jobTitle: "",
         jobDescription: ""
     });
-    console.log(formData);
     const [file, setFile] = useState<File>();
     const [loading, setLoading] = useState<boolean>(false);
     const saveInterviewQuestion = useMutation(api.Interview.SaveInterviewQuestions);
     
     const userContext = useContext(UserDetailContext);
+
+    const router = useRouter();
 
     const onHandleInputChange = (field: keyof FormDataType, value: string | File | null | undefined) => {
         setFormData(prev => ({
@@ -65,8 +67,8 @@ const CreateInterviewDialog = () => {
 
         try {
             const result = await axios.post('/api/generate-interview-question', formData_);
-            console.log(result.data);
             if(result?.data?.status===429){
+                toast.warning(result?.data?.result);
                 console.log(result?.data?.result);
                 return ;
             }
@@ -78,6 +80,7 @@ const CreateInterviewDialog = () => {
                 uid: userContext?.userDetails?._id
             })
             // console.log("Saved interview session: ", response); // this id will be used for redirecting user to the interview session
+            router.push('/interview/' + response)
         } catch (error) {
             console.log(error);
         } finally {

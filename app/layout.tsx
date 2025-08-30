@@ -3,6 +3,7 @@ import { Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ConvexClientProvider } from "./ConvexClientProvider";
+import { Toaster } from "sonner";
 
 const playfair = Playfair_Display({
   subsets: ['latin']
@@ -27,6 +28,7 @@ export default function RootLayout({
         >
           <ConvexClientProvider>
             {children}
+            <Toaster/>
           </ConvexClientProvider>
         </body>
       </html>
