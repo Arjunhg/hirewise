@@ -11,14 +11,6 @@ const MenuOptions = [
         name: 'Dashboard',
         path: '/dashboard'
     },
-    {
-        name: 'Upgrade',
-        path: '/upgrade'
-    }, 
-    {
-        name: 'How it Works?',
-        path: '/how-it-works'
-    }
 ]
 
 function AppHeader() {
