@@ -19,7 +19,7 @@ import axios from 'axios'
 import { useMutation } from 'convex/react'
 import { api } from '@/convex/_generated/api'
 import { UserDetailContext } from '@/context/UserDetailContext'
-import { redirect, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 
 const CreateInterviewDialog = () => {
@@ -53,12 +53,13 @@ const CreateInterviewDialog = () => {
     }, [file]);
 
     const onSubmit = async () => {
-        // if(!file) return;
-
+        // Check if user is authenticated
         if(!userContext?.userDetails?._id){
-            setLoading(false);
-            redirect('/sign-in');
+            toast.error("Please sign in to create an interview");
+            router.push('/sign-in');
+            return;
         }
+
         setLoading(true);
         const formData_ = new FormData();
         formData_.append('file', file??'');
@@ -69,7 +70,6 @@ const CreateInterviewDialog = () => {
             const result = await axios.post('/api/generate-interview-question', formData_);
             if(result?.data?.status===429){
                 toast.warning(result?.data?.result);
-                console.log(result?.data?.result);
                 return ;
             }
             const response = await saveInterviewQuestion({
@@ -80,9 +80,11 @@ const CreateInterviewDialog = () => {
                 uid: userContext?.userDetails?._id
             })
             // console.log("Saved interview session: ", response); // this id will be used for redirecting user to the interview session
+            toast.success("Interview created successfully!");
             router.push('/interview/' + response)
         } catch (error) {
             console.log(error);
+            toast.error("Failed to create interview. Please try again.");
         } finally {
             setLoading(false);
         }
@@ -97,7 +99,7 @@ const CreateInterviewDialog = () => {
                     className="flex items-center gap-2 shadow-md hover:shadow-lg transition-all duration-200 mb-8 cursor-pointer"
                 >
                     <Plus size={20} />
-                    Create Your First Interview
+                    Create Your Interview
                 </Button>
             </DialogTrigger>
             <DialogContent className='w-full max-w-4xl max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]'>

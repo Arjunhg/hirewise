@@ -27,6 +27,7 @@ interface BaseInterview {
   interviewQuestions: { question: string; answer: string }[];
   userId: Id<"UserTable">;
   status: string;
+  feedback?: FeedbackType;
 }
 
 interface ResumeBasedInterview extends BaseInterview {
@@ -55,4 +56,11 @@ export type KnowledgeBaseItem = {
 export type MessageType = {
   from: 'user' | 'bot',
   text: string
+}
+
+// feedback
+export type FeedbackType = {
+  feedback: string;
+  rating: number;
+  suggestion: string;
 }

@@ -1,7 +1,7 @@
 'use client'
 import { api } from '@/convex/_generated/api';
-import { useConvex } from 'convex/react';
-import { useParams } from 'next/navigation'
+import { useConvex, useMutation } from 'convex/react';
+import { useParams, useRouter } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
 import type { Id } from '@/convex/_generated/dataModel';
 import { toast } from 'sonner';
@@ -14,6 +14,7 @@ import { Mic, MicOff, PhoneCall, PhoneOff, User } from 'lucide-react';
 const CONTAINER_ID = 'video-container';
 const AVATAR_ID = 'dvp_Alinna_realisticbg_20241224';
 const VOICE_ID = '6889b610662160e2caad5d8e'
+
 
 const StartInterview = () => {
 
@@ -36,6 +37,10 @@ const StartInterview = () => {
 
     const [messages, setMessages] = useState<MessageType[]>([]);
 
+    const updateFeedback = useMutation(api.Interview.UpdateFeedback);
+
+    const router = useRouter();
+
     const getInterviewQuestions = async () => {
         if(!interviewId || Array.isArray(interviewId)){
             toast.error("Invalid interview ID");
@@ -53,25 +58,22 @@ const StartInterview = () => {
         })
     }
 
-    // console.log("Interview Data is: ", interviewData?.interviewQuestions);
-
-    const GetKnowledgeBase = async () => {
-        const result = await axios.post('/api/akool-knowledge-base', {
-            questions: interviewData?.interviewQuestions
-        });
-        console.log("Knowledge Base Result is: ", result.data);
-        setKbId(result.data?.data?._id);
-    }
+    // const GetKnowledgeBase = async () => { // no need as we have our own prompt now
+    //     const result = await axios.post('/api/akool-knowledge-base', {
+    //         questions: interviewData?.interviewQuestions
+    //     });
+    //     setKbId(result.data?.data?._id);
+    // }
 
     useEffect(() => {
         getInterviewQuestions();
     }, [interviewId])
 
-    useEffect(() => {
-        if (interviewData) {
-            GetKnowledgeBase();
-        }
-    }, [interviewData])
+    // useEffect(() => {
+    //     if (interviewData) {
+    //         GetKnowledgeBase();
+    //     }
+    // }, [interviewData])
 
     // Agora
     useEffect(() => {
@@ -133,9 +135,8 @@ const StartInterview = () => {
         const result = await axios.post('/api/akool-session', {
             avatar_id: AVATAR_ID,
             voice_id: VOICE_ID,
-            knowledge_id: kbId
+            // knowledge_id: kbId
         })
-        // console.log("Session create result: ", result.data); // gives us credentials
         const credentials = result?.data?.data?.credentials;
 
         if(!credentials){
@@ -235,6 +236,37 @@ const StartInterview = () => {
         setLoading(false);
     }
 
+    const toggleMic = async () => {
+        if(!agoraSdk) return ;
+        await agoraSdk?.toggleMic();
+        setMicOn(agoraSdk?.isMicEnabled());
+    }
+
+    const GenerateFeedback = async () => {
+        toast.warning('Generating feedback...')
+        try {
+            const result = await axios.post('/api/interview-feedback', {
+                messages: JSON.stringify(messages) //tested with dummy data
+            });
+            toast.success('Feedback generated. Check console for details.')
+
+            // Save the feedback and then navigate
+            const response = await updateFeedback({
+                feedback: result.data,
+                recordId: interviewId as Id<"InterviewSessionTable">
+            })
+
+            toast.success('Interview completed successfully!')
+
+            router.replace('/dashboard');
+
+        } catch (error) {
+            console.error("Error generating feedback:", error);
+            toast.error('Failed to generate feedback');
+        }
+    }
+
+
     const LeaveConversation = async () => {
         if(!agoraSdk) return ;
         await agoraSdk.leaveChat();
@@ -242,118 +274,119 @@ const StartInterview = () => {
         await agoraSdk.closeStreaming();
         setJoin(false);
         setMicOn(false);
+
+        await GenerateFeedback();
     }
 
-    const toggleMic = async () => {
-        if(!agoraSdk) return ;
-        await agoraSdk?.toggleMic();
-        setMicOn(agoraSdk?.isMicEnabled());
-    }
 
-  return (
-    <div className='flex flex-col lg:flex-row w-full min-h-screen bg-background'>
-      {/* Video Section */}
-      <div className='flex flex-col p-4 sm:p-6 lg:w-2/3 items-center'>
-        <h1 className='text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-foreground'>Interview Session</h1>
-        
-        {/* Video Container */}
-        <div 
-          ref={videoContainerRef} 
-          id={CONTAINER_ID} 
-          className='w-full max-w-2xl aspect-video bg-card border border-border rounded-xl overflow-hidden flex items-center justify-center shadow-sm'
-        >
-            {
-                !join && (
-                    <div className="flex flex-col items-center gap-3 text-muted-foreground">
-                        <User size={48} />
-                        <p className="text-sm font-medium">Ready to connect</p>
-                    </div>
-                )
-            }
-        </div>
+    return (
+        <div className='flex flex-col lg:flex-row w-full min-h-screen bg-background'>
+            {/* Test  */}
+            {/* <Button onClick={GenerateFeedback}>Test Feedback</Button> */}
 
-        {/* Controls */}
-        <div className="mt-4 sm:mt-6 flex flex-wrap gap-3 justify-center">
-            {
-                !join ? (
-                    <Button
-                        onClick={StartConversation}
-                        disabled={loading}
-                        size="lg"
-                        className='flex items-center gap-2 shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50'
-                    >
-                        <PhoneCall size={20}/>
-                        {loading ? 'Connecting...' : 'Start Interview'}
-                    </Button>
-                ) : (
-                    <>
-                        <Button
-                            onClick={toggleMic}
-                            size="lg"
-                            variant={micOn ? 'default' : 'secondary'}
-                            className='flex items-center gap-2 shadow-md hover:shadow-lg transition-all duration-200'
-                        >
-                            {
-                                micOn ? (
-                                    <>
-                                        <Mic size={20}/> Mute
-                                    </>
-                                ) : (
-                                    <>
-                                        <MicOff size={20}/> Unmute
-                                    </>
-                                )
-                            }
-                        </Button>
-                        <Button
-                            onClick={LeaveConversation}
-                            size="lg"
-                            variant="destructive"
-                            className='flex items-center gap-2 shadow-md hover:shadow-lg transition-all duration-200'
-                        >
-                            <PhoneOff size={20}/> End Interview
-                        </Button>
-                    </>
-                )
-            }
-        </div>
-      </div>
-
-      {/* Conversation Section */}
-      <div className='flex flex-col p-4 sm:p-6 lg:w-1/3 min-h-0'>
-        <h2 className='text-lg font-semibold mb-4 text-foreground'>
-          Conversation
-        </h2>
-        
-        {/* Fixed height scrollable container */}
-        <div className='flex-1 min-h-0 bg-card border border-border rounded-xl overflow-hidden flex flex-col'>
-          <div className='flex-1 overflow-y-auto p-4 space-y-3 max-h-[calc(100vh-12rem)]'>
-            {
-                messages?.length === 0 ? (
-                    <div className="flex items-center justify-center h-32">
-                        <p className="text-sm text-muted-foreground text-center">
-                            No messages yet. Start the interview to begin the conversation!
-                        </p>
-                    </div>
-                ) : (
-                    messages?.map((msg, index) => (
-                        <div key={index} className={`flex ${msg.from === 'user' ? 'justify-end' : 'justify-start'}`}>
-                            <div className={`p-3 rounded-lg max-w-[85%] text-sm ${
-                                msg.from === 'user' 
-                                    ? 'bg-primary text-primary-foreground ml-auto' 
-                                    : 'bg-secondary text-secondary-foreground mr-auto'
-                            }`}>
-                                {msg.text}
+                
+            {/* Video Section */}
+            <div className='flex flex-col p-4 sm:p-6 lg:w-2/3 items-center'>
+                <h1 className='text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-foreground'>Interview Session</h1>
+                
+                {/* Video Container */}
+                <div 
+                ref={videoContainerRef} 
+                id={CONTAINER_ID} 
+                className='w-full max-w-2xl aspect-video bg-card border border-border rounded-xl overflow-hidden flex items-center justify-center shadow-sm'
+                >
+                    {
+                        !join && (
+                            <div className="flex flex-col items-center gap-3 text-muted-foreground">
+                                <User size={48} />
+                                <p className="text-sm font-medium">Ready to connect</p>
                             </div>
-                        </div>
-                    ))
-                )
-            }
-          </div>
+                        )
+                    }
+                </div>
+
+                {/* Controls */}
+                <div className="mt-4 sm:mt-6 flex flex-wrap gap-3 justify-center">
+                    {
+                        !join ? (
+                            <Button
+                                onClick={StartConversation}
+                                disabled={loading}
+                                size="lg"
+                                className='flex items-center gap-2 shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50'
+                            >
+                                <PhoneCall size={20}/>
+                                {loading ? 'Connecting...' : 'Start Interview'}
+                            </Button>
+                        ) : (
+                            <>
+                                <Button
+                                    onClick={toggleMic}
+                                    size="lg"
+                                    variant={micOn ? 'default' : 'secondary'}
+                                    className='flex items-center gap-2 cursor-pointer shadow-md hover:shadow-lg transition-all duration-200'
+                                >
+                                    {
+                                        micOn ? (
+                                            <>
+                                                <Mic size={20}/> Mute
+                                            </>
+                                        ) : (
+                                            <>
+                                                <MicOff size={20}/> Unmute
+                                            </>
+                                        )
+                                    }
+                                </Button>
+                                <Button
+                                    onClick={LeaveConversation}
+                                    size="lg"
+                                    variant="destructive"
+                                    className='flex items-center cursor-pointer gap-2 shadow-md hover:shadow-lg transition-all duration-200'
+                                >
+                                    <PhoneOff size={20}/> End Interview
+                                </Button>
+                            </>
+                        )
+                    }
+                </div>
+            </div>
+
+            {/* Conversation Section */}
+            <div className='flex flex-col p-4 sm:p-6 lg:w-1/3 min-h-0'>
+                <h2 className='text-lg font-semibold mb-4 text-foreground'>
+                Conversation
+                </h2>
+                
+                {/* Fixed height scrollable container */}
+                <div className='flex-1 min-h-0 bg-card border border-border rounded-xl overflow-hidden flex flex-col'>
+                <div className='flex-1 overflow-y-auto p-4 space-y-3 max-h-[calc(100vh-12rem)]'>
+                    {
+                        messages?.length === 0 ? (
+                            <div className="flex items-center justify-center h-32">
+                                <p className="text-sm text-muted-foreground text-center">
+                                    No messages yet. Start the interview to begin the conversation!
+                                </p>
+                            </div>
+                        ) : (
+                            messages?.map((msg, index) => (
+                                <div key={index} className={`flex ${msg.from === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                    <div className={`p-3 rounded-lg max-w-[85%] text-sm ${
+                                        msg.from === 'user' 
+                                            ? 'bg-primary text-primary-foreground ml-auto' 
+                                            : 'bg-secondary text-secondary-foreground mr-auto'
+                                    }`}>
+                                        {msg.text}
+                                    </div>
+                                </div>
+                            ))
+                        )
+                    }
+                </div>
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
-  )
+    )
 }
 
 export default StartInterview

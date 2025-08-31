@@ -221,3 +221,13 @@ body.menu-open {
     transform: scaleY(1);
   }
 }
+
+
+/* hide scrollbar for all browsers */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;     /* Firefox */
+}

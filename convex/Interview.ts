@@ -39,3 +39,31 @@ export const GetInterviewQuestions = query({
         return result[0];
     }
 })
+
+export const UpdateFeedback = mutation({
+    args: {
+        recordId: v.id('InterviewSessionTable'),
+        feedback: v.optional(v.object({
+            feedback: v.string(),
+            suggestion: v.string(),
+            rating: v.number()
+        }))
+    },
+    handler: async(ctx, args) => {
+        const result = await ctx.db.patch(args.recordId, {
+            feedback: args.feedback,
+            status: 'completed'
+        })
+        return result;
+    }
+})
+
+export const GetInterviewList = query({
+    args: {
+        uid: v.id('UserTable')
+    },
+    handler: async(ctx, args) => {
+        const result = await ctx.db.query('InterviewSessionTable').filter(q => q.eq(q.field('userId'), args.uid)).order('desc').collect();
+        return result;
+    }
+})

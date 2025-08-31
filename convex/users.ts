@@ -14,23 +14,21 @@ export const CreateNewUser = mutation({
 
         // If not then insert new user in DB
         if(user?.length==0){
-            const data = {
+            const result = await ctx.db.insert('UserTable', {
+                email: args.email,
+                name: args.name,
+                imageUrl: args.imageUrl
+            })
+            console.log("Created new user with ID:", result);
+            return {
+                _id: result,
                 email: args.email,
                 name: args.name,
                 imageUrl: args.imageUrl
             }
-
-            const result = await ctx.db.insert('UserTable', {
-               ...data
-            })
-            console.log(result);
-            return {
-                ...data,
-                result
-                // _id: result._id
-            }
         }
 
+        console.log("Returning existing user:", user[0]);
         return user[0];
     }
 })
