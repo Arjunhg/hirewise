@@ -18,7 +18,7 @@ const Interview = () => {
         <div className="flex justify-center items-center mb-6">
           <div className="relative w-full max-w-25 sm:max-w-30">
             <Image 
-              src={'/job-interview.png'} 
+              src={'/Interview.png'} 
               alt="Job Interview" 
               width={250}
               height={188}
